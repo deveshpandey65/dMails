@@ -2,7 +2,8 @@
             
 import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
-
+import dotenv from "dotenv";
+dotenv.config();
 async function refreshGoogleToken(token) {
     try {
         const url = "https://oauth2.googleapis.com/token";
