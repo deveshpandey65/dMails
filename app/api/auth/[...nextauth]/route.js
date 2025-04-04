@@ -38,8 +38,8 @@ async function refreshGoogleToken(token) {
 export const authOptions = {
     providers: [
         GoogleProvider({
-            clientId: `771090578601-rfgqgto5olkk0ho1j5gq5kdsgiqi97fn.apps.googleusercontent.com`,
-            clientSecret: `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`,
+            clientId: process.env.GOOGLE_CLIENT_ID,
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET,
             authorization: {
                 params: {
                     scope: [
