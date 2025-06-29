@@ -24,7 +24,7 @@ export default function Home() {
           setLoading(false);
           return;
         }
-
+        console.log(token)
         const response = await axios.get("https://dmails.netlify.app/auth/emails", {
           headers: { Authorization: `Bearer ${token}` },
         });

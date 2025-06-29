@@ -1,5 +1,6 @@
 import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
+require("dotenv").config();
 
 async function refreshGoogleToken(token) {
     try {
@@ -67,6 +68,7 @@ export const authOptions = {
                 token.accessTokenExpires = account.expires_at * 1000;
 
                 try {
+                    console.log(process.env.NEXT_PUBLIC_BACKEND_URL)
                     const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/google-login`, {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
@@ -76,7 +78,7 @@ export const authOptions = {
                             refreshToken: account.refresh_token,
                         }),
                     });
-
+                    console.log( res );
                     const data = await res.json();
                     console.log( data );
                     if (res.ok) {
