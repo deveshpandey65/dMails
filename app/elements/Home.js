@@ -18,7 +18,7 @@ export default function Home() {
       setLoading(true);
       setError(null);
       try {
-        const response = await axios.get("/api/emails", {
+        const response = await axios.get("https://dmails.netlify.app/auth/emails", {
           headers: { Authorization: `Bearer ${token}` },
         });
         setEmails(response.data); 
@@ -40,7 +40,7 @@ export default function Home() {
     if (isUnread) {
       try {
         const response = await axios.post(
-          "/api/emails/markAsRead",
+          "https://dmails.netlify.app/auth/emails/markAsRead",
           { emailId: email.id },
           {
             headers: {
@@ -49,9 +49,9 @@ export default function Home() {
             },
           }
         );
-        console.log("✅ Email marked as read:", response.data);
+        console.log("Email marked as read:", response.data);
 
-        // ✅ Move email from "unread" to "read"
+        //  Move email from "unread" to "read"
         setEmails((prevEmails) => ({
           unread: prevEmails.unread.filter((e) => e.id !== email.id),
           read: [...prevEmails.read, email],
@@ -61,11 +61,18 @@ export default function Home() {
       }
     }
 
-    // ✅ Fetch summary
+    //Fetch summary
     try {
-      const summaryResponse = await axios.post("/api/emails/summarize", {
+      console.log("Emails:", email.snippet);
+      const summaryResponse = await axios.post("https://dmails.netlify.app/ai/summarize", {
         text: email.snippet,
+      }, {
+        headers: {
+          "Content-Type": "application/json",
+        }
       });
+      
+      
       setSummary(summaryResponse.data.summary);
     } catch (error) {
       console.error("❌ AI Summarization Failed:", error);
