@@ -1,7 +1,6 @@
-
-            
 import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
+
 async function refreshGoogleToken(token) {
     try {
         const url = "https://oauth2.googleapis.com/token";
@@ -25,8 +24,8 @@ async function refreshGoogleToken(token) {
         return {
             ...token,
             accessToken: refreshedTokens.access_token,
-            accessTokenExpires: Date.now() + refreshedTokens.expires_in * 1000, // New expiry time
-            refreshToken: refreshedTokens.refresh_token || token.refreshToken, // Use new refresh token if provided
+            accessTokenExpires: Date.now() + refreshedTokens.expires_in * 1000,
+            refreshToken: refreshedTokens.refresh_token || token.refreshToken,
         };
     } catch (error) {
         console.error("Failed to refresh access token:", error);
@@ -48,9 +47,9 @@ export const authOptions = {
                         "https://www.googleapis.com/auth/gmail.readonly",
                         "https://www.googleapis.com/auth/gmail.modify",
                         "https://www.googleapis.com/auth/userinfo.email",
-                    ].join(" "), // Convert array to space-separated string
+                    ].join(" "),
                     access_type: "offline",
-                    prompt: "consent", // Ensures refresh token is always received
+                    prompt: "consent",
                 },
             },
         }),
@@ -59,50 +58,52 @@ export const authOptions = {
     secret: process.env.NEXTAUTH_SECRET,
 
     callbacks: {
-        async jwt({ token, account }) {
-            // On initial sign-in
+        async jwt({ token, account, user }) {
+            // Initial sign-in
             if (account) {
                 token.id_token = account.id_token;
                 token.accessToken = account.access_token;
                 token.refreshToken = account.refresh_token;
-                token.accessTokenExpires = account.expires_at * 1000; // Convert to milliseconds
+                token.accessTokenExpires = account.expires_at * 1000;
+
+                try {
+                    const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/google-login`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            token: account.id_token,
+                            accessToken: account.access_token,
+                            refreshToken: account.refresh_token,
+                        }),
+                    });
+
+                    const data = await res.json();
+                    console.log( data );
+                    if (res.ok) {
+                        token.appJwt = data.token;
+                        token.appUser = data.user; 
+                    } else {
+                        console.error("❌ Failed to login to backend:", data.message);
+                    }
+                } catch (err) {
+                    console.error("❌ Backend login error:", err);
+                }
             }
 
-            // Check if token is expired
-            if (Date.now() < token.accessTokenExpires) {
-                return token;
-            }
+            if (Date.now() < token.accessTokenExpires) return token;
 
-            // Refresh access token
             return await refreshGoogleToken(token);
         },
 
         async session({ session, token }) {
-            if (token.id_token) {
-                try {
-                    const res = await fetch("https://dmails.netlify.app/auth/google-login", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({
-                            token: token.id_token,
-                            accessToken: token.accessToken,
-                            refreshToken: token.refreshToken,
-                        }),
-                    });
-                    const data = await res.json();
-
-                    if (res.ok) {
-                        session.jwt = data.token;
-                        session.user = data.user;
-                    }
-                    else{
-                        console.error("Error fetching session:", data.message);
-                    }
-                } catch (error) {
-                    console.error("Google Login Error:", error);
-                }
-            } else {
-                console.error("No ID token found in token object!");
+            session.accessToken = token.accessToken;
+            session.refreshToken = token.refreshToken;
+            session.expires = token.accessTokenExpires;
+            session.id_token = token.id_token;
+            console.log( token );
+            if (token.appJwt) {
+                session.jwt = token.appJwt;         
+                session.user = token.appUser || session.user;
             }
 
             return session;

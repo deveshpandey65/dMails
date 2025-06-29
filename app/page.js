@@ -22,14 +22,14 @@ export default function Page() {
 
   useEffect(() => {
     if (!showLoader && status === "unauthenticated") {
-      router.push("/login"); // ✅ Redirect inside useEffect (prevents error)
+      router.push("/login"); 
     }
   }, [status, showLoader, router]);
 
   useEffect(() => {
     if (session) {
       console.log("Session data:", session);
-      localStorage.setItem("jwtmail", JSON.stringify(session.jwt));
+      localStorage.setItem("jwtmail", session.jwt);
       localStorage.setItem("username", session.user.name);
       localStorage.setItem("userimage", session.user.profilePic);
       console.log("Session", session.user);

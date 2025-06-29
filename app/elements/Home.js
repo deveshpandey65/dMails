@@ -10,28 +10,38 @@ export default function Home() {
   const [emails, setEmails] = useState({ unread: [], read: [] });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
   const token = localStorage.getItem("jwtmail");
 
   useEffect(() => {
     const fetchEmails = async () => {
       setLoading(true);
       setError(null);
+
       try {
+        if (!token) {
+          console.warn("❗ No JWT token found. Skipping email fetch.");
+          setError("Authentication token missing.");
+          setLoading(false);
+          return;
+        }
+
         const response = await axios.get("https://dmails.netlify.app/auth/emails", {
           headers: { Authorization: `Bearer ${token}` },
         });
-        setEmails(response.data); 
+
+        setEmails(response.data);
       } catch (error) {
-        console.error("❌ Failed to fetch emails:", error);
+        console.error("❌ Failed to fetch emails:", error.response?.data || error.message);
         setError("Failed to fetch emails. Please try again.");
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     fetchEmails();
-  }, []);
-
+  }, [token]);
+  
+     
   const handleEmailClick = async (email, isUnread) => {
     setSelectedEmail(email);
     setSummary("");
@@ -41,7 +51,7 @@ export default function Home() {
       try {
         const response = await axios.post(
           "https://dmails.netlify.app/auth/emails/markAsRead",
-          { emailId: email.id },
+          { emailIds: [email.id] }, // request body
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -49,6 +59,7 @@ export default function Home() {
             },
           }
         );
+        
         console.log("Email marked as read:", response.data);
 
         //  Move email from "unread" to "read"
