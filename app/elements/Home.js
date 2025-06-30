@@ -52,7 +52,7 @@ export default function Home() {
       try {
         const response = await axios.post(
           "https://dmails.netlify.app/auth/emails/markAsRead",
-          { emailIds: [email.id] }, // request body
+          { emailIds: [email.id] },
           {
             headers: {
               Authorization: `Bearer ${token}`,

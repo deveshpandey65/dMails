@@ -12,7 +12,7 @@ export default function SelectedMail({ selectedEmail,summary }) {
         setSuggestedReplies([]);
         try {
             const receiver = localStorage.getItem("usermail") || ""; 
-            const replyResponse = await axios.post("https://dmails.netlify.app/ai/suggestreply", {
+            const replyResponse = await axios.post("http://localhost:8888/ai/suggestreply", {
                 text: selectedEmail.snippet,
                 sender: selectedEmail.sender,
                 recipientId: receiver,

@@ -66,7 +66,7 @@ export const authOptions = {
                 token.id_token = account.id_token;
                 token.accessToken = account.access_token;
                 token.refreshToken = account.refresh_token;
-
+                console.log("URL:", process.env.NEXT_PUBLIC_BACKEND_URL)
                 try {
                     const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/google-login`, {
                         method: "POST",
