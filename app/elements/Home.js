@@ -11,7 +11,6 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const token = localStorage.getItem("jwtmail");
-
   useEffect(() => {
     const fetchEmails = async () => {
       setLoading(true);
@@ -24,9 +23,11 @@ export default function Home() {
           setLoading(false);
           return;
         }
-        console.log(token)
+
         const response = await axios.get("https://dmails.netlify.app/auth/emails", {
-          headers: { Authorization: `Bearer ${token}` },
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         });
 
         setEmails(response.data);
@@ -40,7 +41,7 @@ export default function Home() {
 
     fetchEmails();
   }, [token]);
-  
+
      
   const handleEmailClick = async (email, isUnread) => {
     setSelectedEmail(email);

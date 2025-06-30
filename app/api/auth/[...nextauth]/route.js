@@ -61,14 +61,13 @@ export const authOptions = {
     callbacks: {
         async jwt({ token, account, user }) {
             // Initial sign-in
+            console.log( "token:",token)
             if (account) {
                 token.id_token = account.id_token;
                 token.accessToken = account.access_token;
                 token.refreshToken = account.refresh_token;
-                token.accessTokenExpires = account.expires_at * 1000;
 
                 try {
-                    console.log(process.env.NEXT_PUBLIC_BACKEND_URL)
                     const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/google-login`, {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
@@ -78,12 +77,11 @@ export const authOptions = {
                             refreshToken: account.refresh_token,
                         }),
                     });
-                    console.log( res );
+
                     const data = await res.json();
-                    console.log( data );
                     if (res.ok) {
                         token.appJwt = data.token;
-                        token.appUser = data.user; 
+                        token.appUser = data.user;
                     } else {
                         console.error("❌ Failed to login to backend:", data.message);
                     }
@@ -91,6 +89,7 @@ export const authOptions = {
                     console.error("❌ Backend login error:", err);
                 }
             }
+              
 
             if (Date.now() < token.accessTokenExpires) return token;
 
@@ -98,11 +97,13 @@ export const authOptions = {
         },
 
         async session({ session, token }) {
+            console.log("Token Session:", token);
+
             session.accessToken = token.accessToken;
             session.refreshToken = token.refreshToken;
             session.expires = token.accessTokenExpires;
             session.id_token = token.id_token;
-            console.log( token );
+            console.log( "Token Session:",token );
             if (token.appJwt) {
                 session.jwt = token.appJwt;         
                 session.user = token.appUser || session.user;
